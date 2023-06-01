@@ -1,0 +1,54 @@
+---
+- hosts: "{{host_play}}"
+  become: yes
+  vars_prompt:
+    - name: host_play
+      prompt: What is your host?
+      private: no
+
+  tasks:
+    - name: Check for file presence
+      ansible.builtin.script: Created_PSK.sh --some-argument 1234
+      register: script_out
+      become: true
+      tags: Check for file presence
+
+    - name: "print script output"
+      debug:
+        msg: "{{ script_out }}"
+      become: true
+
+    - name: edit_hostname
+      lineinfile: dest=/etc/zabbix/zabbix_agentd.conf regexp='^Hostname=' insertbefore=BOF line='Hostname={{ ansible_hostname }}'
+      become: true
+      tags: edit_hostname
+
+    - name: edit_server
+      lineinfile: dest=/etc/zabbix/zabbix_agentd.conf regexp='^Server='  line='Server=45.155.207.74'
+      become: true
+      tags: edit_server
+
+    - name: TLSConnect=psk
+      lineinfile: dest=/etc/zabbix/zabbix_agentd.conf insertafter="^#" line="TLSConnect=psk"
+      become: true
+      tags: TLSConnect=psk
+
+    - name: TLSAccept=psk
+      lineinfile: dest=/etc/zabbix/zabbix_agentd.conf insertafter="^TLSConnect=psk" line="TLSAccept=psk"
+      become: true
+      tags: TLSAccept=psk
+
+    - name: TLSPSKIdentity=PSK0014
+      lineinfile: dest=/etc/zabbix/zabbix_agentd.conf insertafter="^TLSAccept=psk" line="TLSPSKIdentity=PSK0014"
+      become: true
+      tags: TLSPSKIdentity=PSK0014
+
+    - name: TLSPSKFile=/etc/zabbix/zabbix_agentd.psk
+      lineinfile: dest=/etc/zabbix/zabbix_agentd.conf insertafter="^TLSPSKIdentity=PSK0013" line="TLSPSKFile=/etc/zabbix/zabbix_agentd.psk"
+      become: true
+      tags: TLSPSKFile=/etc/zabbix/zabbix_agentd.psk
+
+    - name: restart zabbix
+      service: name=zabbix-agent state=restarted
+      become: true
+      tags: restart_zabbix

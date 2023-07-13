@@ -1,0 +1,24 @@
+---
+- hosts: "{{host_play}}"
+  vars_prompt:
+     - name: host_play
+       prompt: what is your host?
+       private: no
+
+  tasks:
+   - name: Install Zabbix_Agent1
+     block:
+      - name: Install Zabbix_Agent for Debian
+        apt:
+          name:
+          - zabbix-agent
+          state: latest
+     when: ansible_os_family == "Debian"
+   - name: Install Zabbix_Agent2
+     block:
+      - name: Install Zabbix_Agent for RedHat
+        dnf:
+          name:
+          - zabbix-agent
+          state: latest
+     when: ansible_os_family == "RedHat"

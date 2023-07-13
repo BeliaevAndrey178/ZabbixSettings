@@ -1,0 +1,14 @@
+- hosts: "{{host_play}}"
+  become: yes
+  vars_prompt:
+    - name: host_play
+      prompt: What is your host?
+      private: no
+    - name: Hostname
+      prompt: What is your hostname?
+      private: no
+  tasks:
+    - name: Set a hostname
+      ansible.builtin.hostname:
+        name: "{{Hostname}}"
+
